@@ -3,6 +3,7 @@ package proyectos.create.ef_ejercicio;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
@@ -30,7 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
     DatabaseReference base_de_datos;
 
+    AdaptadorData adaptador;
+
     List<Usuario> listausuarios = new ArrayList<>();
+
+    // Variantes de los datos que vamos a registrar (Servicio de Realtime Database)
+    private String nombre_bd ="";
+    private String correo_bd ="";
+    private String clave_bd = "";
 
 
     @Override
@@ -51,10 +59,29 @@ public class MainActivity extends AppCompatActivity {
         btnConsultar= findViewById(R.id.btn_consultar);
         btnConsultarUsuario = findViewById(R.id.btn_consultar_usuario);
 
+        // Recycle View
+        rvUsuario = findViewById(R.id.rv_data);
+        rvUsuario.setLayoutManager(new GridLayoutManager(this, 1));
+
+
         btn_agregar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 agregarData();
+            }
+        });
+
+        btnConsultar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                obtenerUsuarios();
+            }
+        });
+
+        btnConsultarUsuario.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                obtenerUsuario();
             }
         });
     }
@@ -97,12 +124,31 @@ public class MainActivity extends AppCompatActivity {
                 for(DataSnapshot objeto: snapshot.getChildren()){
                     listausuarios.add(objeto.getValue(Usuario.class));
                 }
-                adaptador = new AdaptadorUsuario(MainActivity.this, listausuarios);
+                adaptador = new AdaptadorData(MainActivity.this, listausuarios);
                 rvUsuario.setAdapter(adaptador);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void obtenerUsuarios(){
+        listausuarios.clear();
+        base_de_datos.child("Usuarios").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot objeto: snapshot.getChildren()){
+                    listausuarios.add(objeto.getValue(Usuario.class));
+                }
+                adaptador = new AdaptadorData(MainActivity.this, listausuarios);
+                rvUsuario.setAdapter(adaptador);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
     }
 }
